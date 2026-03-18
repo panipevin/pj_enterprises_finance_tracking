@@ -333,7 +333,6 @@ function toggleCardDetails(cardElement, category) {
     if (!isActive) {
         cardElement.classList.add('active');
         
-        // Handle Search card focus
         if (category === 'Search') {
             const input = document.getElementById('clientSearchInput');
             if (input) input.focus();
@@ -343,24 +342,26 @@ function toggleCardDetails(cardElement, category) {
         const listContainer = cardElement.querySelector('.dropdown-list ul');
         if (!listContainer) return;
 
-        // --- NEW: SPECIAL LOGIC FOR "TYPES" CARD (KPI-2) ---
+        // --- NEW: COUNT LOGIC FOR "TYPES" CARD ---
         if (category === 'Types') {
-            const typeTotals = {};
+            const typeCounts = {};
             dashboardFullList.forEach(item => {
-                const typeName = item.type || "Others";
-                const bal = parseFloat(item.balance) || 0;
-                typeTotals[typeName] = (typeTotals[typeName] || 0) + bal;
+                // Only count active loans (Balance > 0)
+                if (parseFloat(item.balance) > 0) {
+                    const typeName = item.type || "Others";
+                    typeCounts[typeName] = (typeCounts[typeName] || 0) + 1;
+                }
             });
 
-            const sortedTypes = Object.keys(typeTotals).sort();
+            const sortedTypes = Object.keys(typeCounts).sort();
             listContainer.innerHTML = sortedTypes.length === 0 
-                ? "<li>No records found</li>" 
+                ? "<li>No active types found</li>" 
                 : sortedTypes.map(t => `
                     <li>
                         <span class="name">${t}</span> 
-                        <span class="amt">₹${typeTotals[t].toLocaleString('en-IN')}</span>
+                        <span class="amt" style="color: #60a5fa; font-weight: 800;">${typeCounts[t]} Loans</span>
                     </li>`).join('');
-            return; // Exit after handling Types
+            return; 
         }
 
         // --- STANDARD LOGIC FOR ALL OTHER CARDS ---

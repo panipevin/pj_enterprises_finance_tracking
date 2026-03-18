@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan/Debt Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="magic-overlay" onclick="closeMagic()"></div>
+    <div id="loader-overlay">
+        <div class="spinner" style="border-top-color: #0f0f15;"></div> Loading Dashboard...
+    </div>
+
+    <header class="navbar">
+        <div class="logo">Loans & Debts</div>
+        <div>Antony & Kathiren</div>
+    </header>
+
+    <main class="dashboard-wrapper">
+        <h2 class="page-title">Welcome Back, Antony!</h2>
+        
+        <section class="kpi-grid">
+            <div class="card kpi-1" onclick="toggleCardDetails(this, 'Total')">
+                <h3>Total Person</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-2" onclick="toggleCardDetails(this, 'Types')">
+                <h3>Types</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-4" onclick="toggleCardDetails(this, 'Total Amount')">
+                <h3>Total Debt</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-7" onclick="toggleCardDetails(this, 'Balance')">
+                <h3>Current Total Debt</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-8" onclick="toggleCardDetails(this, 'Company')" style="border-top-color: #2dd4bf;">
+                <h3>Company's Amount</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-bank" onclick="toggleCardDetails(this, 'Bank')" style="border-top-color: #3b82f6;">
+                <h3>Bank's Amount</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-daily" onclick="toggleCardDetails(this, 'Daily Finance')" style="border-top-color: #f97316;">
+                <h3>Daily Finance</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-private" onclick="toggleCardDetails(this, 'Private Loan')" style="border-top-color: #8b5cf6;">
+                <h3>Private Loan</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-others" onclick="toggleCardDetails(this, 'Others')" style="border-top-color: #f472b6;">
+                <h3>Others</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+            <div class="card kpi-completed" onclick="toggleCardDetails(this, 'Completed')" style="border-top-color: #4ade80;">
+                <h3>Completed</h3>
+                <div class="value">0</div>
+                <div class="dropdown-list"><ul></ul></div>
+            </div>
+        </section>
+
+        <section class="charts-row">
+            <div class="chart-card">
+                <h3>Loan Distribution by Person</h3>
+                <div style="height: 280px;">
+                    <canvas id="loanBarChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card" style="overflow: hidden; display: flex; flex-direction: column;">
+                <h3>Executive History Lookup</h3>
+                
+                <div style="display: flex; gap: 8px; margin: 15px 0 10px 0;">
+                    <input type="text" id="clientSearchInput" list="clientNamesList" 
+                           placeholder="Select or type name..." 
+                           style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none;">
+                    
+                    <datalist id="clientNamesList"></datalist>
+
+                    <button onclick="filterClientHistory()" class="btn-primary" style="padding: 0 15px; background: #0f0f15; border-radius: 8px;">Lookup</button>
+                    <button onclick="clearSearch()" style="padding: 0 12px; background: #eee; border: none; border-radius: 8px; cursor: pointer; color: #555; font-weight: 600;">Clear</button>
+                </div>
+
+                <div id="historyWrapper" style="flex: 1; overflow-y: auto; background: #fdfdfd; border: 1px solid #eee; border-radius: 12px; padding: 10px;">
+                    <ul id="historyList" style="list-style: none; padding: 0; margin: 0;">
+                        <li style="color: #888; text-align: center; margin-top: 20px;">Enter a name and press Lookup</li>
+                    </ul>
+                </div>
+
+                <div style="height: 0px; visibility: hidden;">
+                    <canvas id="loanStatusChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div class="header-actions">
+        <button id="openModalBtn" class="btn-primary">+ Add New Loan</button>
+        <button id="openPaymentModalBtn" class="btn-primary" style="background: #4ade80;">$ Record Payment</button>
+    </div>
+
+    <div id="loanModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Add New Loan</h2>
+            <form id="loanForm">
+                <input type="text" id="personName" list="allClientsList" placeholder="Select or Type Name" required>
+                <datalist id="allClientsList"></datalist>
+                
+                <input type="number" id="loanAmount" placeholder="Total Amount" required>
+
+                <select id="loanType" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; background: white;">
+                    <option value="" disabled selected>Select Loan/Debt Type</option>
+                    <option value="Company">1. Company</option>
+                    <option value="Daily Finance">2. Daily Finance</option>
+                    <option value="Bank">3. Bank</option>
+                    <option value="Private Loan">4. Private Loan</option>
+                    <option value="Others">5. Others</option>
+                </select>
+
+                <div id="interestGroup" style="display: none;">
+                    <input type="number" id="interestRate" placeholder="Interest %" step="0.1">
+                </div>
+
+                <div id="tenureGroup" style="display: none;">
+                    <input type="number" id="tenure" placeholder="Tenure (Months)">
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary">Save Loan</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-payment-btn" style="position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 20px;">&times;</span>
+            <h2> Record Payment</h2>
+            <form id="paymentForm">
+                <select id="paymentPersonName" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; background: white;">
+                    <option value="" disabled selected>Loading Names...</option>
+                </select>
+                <input type="number" id="paymentAmount" placeholder="Amount Paid" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                <button type="submit" id="savePaymentBtn" class="btn-primary" style="background: #4ade80;">Update Balance</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="script.js" defer></script>
+</body>
+</html>
